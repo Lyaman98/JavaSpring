@@ -1,11 +1,9 @@
 package com.example.spring.controller;
 
 import com.example.spring.Application;
-import com.example.spring.repository.BusinessRepository;
 import com.example.spring.service.BusinessService;
 import com.example.spring.service.dto.BusinessDTO;
 import org.json.JSONException;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,20 +12,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MockMvcBuilder;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -52,10 +44,11 @@ public class BusinessControllerIntegrationTest {
     private BusinessDTO businessDTO;
 
     @Before
-    public void setup(){
-        businessDTO = new BusinessDTO(1L,"Google", "Social Media");
+    public void setup() {
+        businessDTO = new BusinessDTO(1L, "Google", "Social Media");
         mockMvc = MockMvcBuilders.standaloneSetup(new BusinessController(businessService)).build();
     }
+
     //test to save mock Business object
     @Test
     public void save() {
@@ -82,9 +75,10 @@ public class BusinessControllerIntegrationTest {
     }
 
     @Test
-    public void getBusinesses() throws Exception{
+    public void getBusinesses() throws Exception {
 
         //https://restfulapi.net/json-jsonpath/
+        //you can use jsonPath to check the fields
 
         mockMvc.perform(get("/api/business"))
                 .andExpect(status().isOk())
@@ -96,14 +90,13 @@ public class BusinessControllerIntegrationTest {
     @Test
     public void getAll() throws JSONException {
 
-        ResponseEntity<String> result = testRestTemplate.getForEntity(createURI("/api/business"),String.class);
+        ResponseEntity<String> result = testRestTemplate.getForEntity(createURI("/api/business"), String.class);
         String content = "[{\"id\":1,\"name\":\"Facebook\",\"info\":\"Social Media\"}]";
 
         assertEquals(200, result.getStatusCodeValue());
-        JSONAssert.assertEquals(content, result.getBody(),false);
+        JSONAssert.assertEquals(content, result.getBody(), false);
 
-
-
+        //will compare by reference (will use default equals method)
 
 //        ResponseEntity<List<BusinessDTO>> response = testRestTemplate.exchange(createURI("/api/business"),
 //                HttpMethod.GET,
@@ -121,13 +114,13 @@ public class BusinessControllerIntegrationTest {
     }
 
     @Test
-    public void findAll() throws Exception{
+    public void findAll() throws Exception {
 
     }
 
     //TODO: ******not worked********
     @Test
-    public void updateBusiness(){
+    public void updateBusiness() {
         BusinessDTO request = new BusinessDTO(1L, "Youtube", "Social Media");
 
         ResponseEntity<BusinessDTO> response = testRestTemplate.exchange(createURI("/api/business"),
@@ -138,14 +131,14 @@ public class BusinessControllerIntegrationTest {
 
     //completed - works
     @Test
-    public void deleteBusiness(){
+    public void deleteBusiness() {
 
         ResponseEntity<BusinessDTO> response = testRestTemplate.exchange(createURI("/api/business/1"),
                 HttpMethod.DELETE, null, BusinessDTO.class);
 
         BusinessDTO businessDTO = new BusinessDTO(1L, "Facebook", "Social Media");
 
-        assertEquals(200,response.getStatusCodeValue());
+        assertEquals(200, response.getStatusCodeValue());
         assertEquals(String.valueOf(1L), String.valueOf(response.getBody().getId()));
         assertEquals("Facebook", response.getBody().getName());
         assertEquals("Social Media", response.getBody().getInfo());
