@@ -86,8 +86,11 @@ public class BusinessControllerIntegrationTest {
     public void updateBusiness(){
         BusinessDTO request = new BusinessDTO(1L, "Youtube", "Social Media");
 
-        ResponseEntity<BusinessDTO> response = testRestTemplate.exchange(createURI("/api/business/update"),
-                HttpMethod.PUT, new HttpEntity<>(request), BusinessDTO.class);
+//        ResponseEntity<BusinessDTO> response = testRestTemplate.exchange(createURI("/api/business/update"),
+//                HttpMethod.PUT, new HttpEntity<>(request), BusinessDTO.class);
+        testRestTemplate.put(createURI("/api/business/update"), request);
+        ResponseEntity<BusinessDTO> response = testRestTemplate.getForEntity(createURI("/api/business/1"),
+                BusinessDTO.class);
 
         Assert.assertEquals(request, response.getBody());
     }
@@ -99,12 +102,12 @@ public class BusinessControllerIntegrationTest {
         ResponseEntity<BusinessDTO> response = testRestTemplate.exchange(createURI("/api/business/delete/1"),
                 HttpMethod.DELETE, null, BusinessDTO.class);
 
-        BusinessDTO businessDTO = new BusinessDTO(1L, "Facebook", "Social Media");
+        ResponseEntity<BusinessDTO> getBusinessDto = testRestTemplate.getForEntity(createURI("/api/business/1"),
+                BusinessDTO.class);
 
-        Assert.assertEquals(200,response.getStatusCodeValue());
-        Assert.assertEquals(String.valueOf(1L), String.valueOf(response.getBody().getId()));
-        Assert.assertEquals("Facebook", response.getBody().getName());
-        Assert.assertEquals("Social Media", response.getBody().getInfo());
+        Assert.assertEquals(HttpStatus.NO_CONTENT,response.getStatusCode());
+        Assert.assertNull(getBusinessDto.getBody());
+
     }
 
     //***********************************

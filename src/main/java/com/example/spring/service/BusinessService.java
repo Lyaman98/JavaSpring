@@ -1,5 +1,6 @@
 package com.example.spring.service;
 
+import com.example.spring.service.dto.AdvertisementDTO;
 import com.example.spring.service.dto.BusinessDTO;
 
 import java.util.List;
@@ -12,5 +13,7 @@ public interface BusinessService {
     List<BusinessDTO> getAll();
     void deleteById(Long id);
     void delete(BusinessDTO businessDto);
+    void addAdvertisement(Long businessId, AdvertisementDTO advertisementDTO );
+    void removeAdvertisement(Long businessId, Long advertisementId);
 
 }

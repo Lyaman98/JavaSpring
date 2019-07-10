@@ -150,7 +150,7 @@ public class BusinessControllerUnitTest {
         String content = objectToString(businessDTO);
 
         MvcResult result = mockMvc.perform(MockMvcRequestBuilders.delete("/api/business/delete/1"))
-                                  .andExpect(status().isOk())
+                                  .andExpect(status().isNoContent())
                                   .andReturn();
         JSONAssert.assertEquals(content, result.getResponse().getContentAsString(), false);
     }
