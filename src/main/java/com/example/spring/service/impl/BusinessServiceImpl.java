@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -32,7 +34,6 @@ public class BusinessServiceImpl implements BusinessService {
 
     @Override
     public BusinessDTO save(BusinessDTO businessDTO) {
-
         logger.debug("Saving business");
         Business business = businessMapper.toEntity(businessDTO);
         businessRepository.save(business);
@@ -43,5 +44,28 @@ public class BusinessServiceImpl implements BusinessService {
     public Optional<BusinessDTO> getById(Long id) {
         return businessRepository.findById(id)
                 .map(businessMapper::toDTO);
+    }
+
+    @Override
+    public List<BusinessDTO> getAll() {
+        List<Business> businesses = businessRepository.findAll();
+        List<BusinessDTO> businessDTOS = new ArrayList<>();
+        for(Business business : businesses){
+            if(business != null){
+                businessDTOS.add(businessMapper.toDTO(business));
+            }
+        }
+        return businessDTOS;
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        businessRepository.deleteById(id);
+    }
+
+    @Override
+    public void delete(BusinessDTO businessDto) {
+        Business business = businessMapper.toEntity(businessDto);
+        businessRepository.delete(business);
     }
 }
