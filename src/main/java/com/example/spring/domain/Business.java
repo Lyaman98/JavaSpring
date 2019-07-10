@@ -1,6 +1,7 @@
 package com.example.spring.domain;
 
 import javax.persistence.*;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -55,7 +56,6 @@ public class Business {
 
     public void addAdvertisement(Advertisement advertisement){
         this.advertisements.add(advertisement);
-
     }
     public void removeAdvertisement(Advertisement advertisement){
         this.advertisements.remove(advertisement);
@@ -63,6 +63,22 @@ public class Business {
 
     public Set<Advertisement> getAdvertisements() {
         return advertisements;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Business business = (Business) o;
+        return id.equals(business.id) &&
+                Objects.equals(name, business.name) &&
+                Objects.equals(info, business.info) &&
+                Objects.equals(advertisements, business.advertisements);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 
     @Override

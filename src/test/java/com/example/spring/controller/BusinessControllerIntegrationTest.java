@@ -1,40 +1,67 @@
 package com.example.spring.controller;
 
 import com.example.spring.Application;
+import com.example.spring.repository.BusinessRepository;
+import com.example.spring.service.BusinessService;
 import com.example.spring.service.dto.BusinessDTO;
 import org.json.JSONException;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.*;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MockMvcBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertEquals;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@ActiveProfiles(value = "test")
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = Application.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-
 public class BusinessControllerIntegrationTest {
 
     @LocalServerPort
     private int localPort;
 
+    private MockMvc mockMvc;
+
+    @Autowired
+    BusinessService businessService;
+
+
     private TestRestTemplate testRestTemplate = new TestRestTemplate();
 
+    private BusinessDTO businessDTO;
+
+    @Before
+    public void setup(){
+        businessDTO = new BusinessDTO(1L,"Google", "Social Media");
+        mockMvc = MockMvcBuilders.standaloneSetup(new BusinessController(businessService)).build();
+    }
     //test to save mock Business object
     @Test
     public void save() {
 
-        BusinessDTO businessDTO = new BusinessDTO("Facebook", "Social Media");
-        ResponseEntity<BusinessDTO> dto = testRestTemplate.postForEntity(createURI("/api/business/save"), businessDTO, BusinessDTO.class);
+        ResponseEntity<BusinessDTO> dto = testRestTemplate.postForEntity(createURI("/api/business"),
+                businessDTO, BusinessDTO.class);
         assertThat(dto.getStatusCode(), equalTo(HttpStatus.CREATED));
     }
 
@@ -54,32 +81,78 @@ public class BusinessControllerIntegrationTest {
         JSONAssert.assertEquals(result, dto.getBody(), false);
     }
 
-    private String createURI(String uri) {
-        return "http://localhost:" + localPort + uri;
+    @Test
+    public void getBusinesses() throws Exception{
+
+        //https://restfulapi.net/json-jsonpath/
+
+        mockMvc.perform(get("/api/business"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(jsonPath("$.[*].id").value(hasItem(businessDTO.getId().intValue())));
+    }
+
+    //TODO: *****not worked*******
+    @Test
+    public void getAll() throws JSONException {
+
+        ResponseEntity<String> result = testRestTemplate.getForEntity(createURI("/api/business"),String.class);
+        String content = "[{\"id\":1,\"name\":\"Facebook\",\"info\":\"Social Media\"}]";
+
+        assertEquals(200, result.getStatusCodeValue());
+        JSONAssert.assertEquals(content, result.getBody(),false);
+
+
+
+
+//        ResponseEntity<List<BusinessDTO>> response = testRestTemplate.exchange(createURI("/api/business"),
+//                HttpMethod.GET,
+//                null,
+//                new ParameterizedTypeReference<List<BusinessDTO>>() {
+//                });
+//
+//        BusinessDTO businessDTO = new BusinessDTO(1L, "Facebook", "Social Media");
+//        List<BusinessDTO> businessDTOList = new ArrayList<>();
+//        businessDTOList.add(businessDTO);
+//
+//
+//        Assert.assertEquals(200, response.getStatusCodeValue());
+//        Assert.assertEquals(businessDTOList,response.getBody());
     }
 
     @Test
-    public void getAll() throws Exception{
-
-        String result = "[{\"id\":1,\"name\":\"Facebook\",\"info\":\"Social Media\"}," +
-                "{\"id\":2,\"name\":\"Twitter\",\"info\":\"Social networking system\"}," +
-                "{\"id\":3,\"name\":\"Google\",\"info\":\"Search engine\"}]";
-
-        ResponseEntity<String> responseEntity = testRestTemplate.getForEntity(createURI("/api/business"),String.class);
-
-        JSONAssert.assertEquals(result,responseEntity.getBody(),false);
+    public void findAll() throws Exception{
 
     }
-//
-//    @Test
-//    public void delete() throws Exception{
-//
-//       testRestTemplate.delete(createURI("/api/business/1"));
-//        ResponseEntity<String> result = testRestTemplate.getForEntity(createURI("/api/business/1"), String.class);
-//
-//        assertNull(result);
-//
-//
-//    }
 
+    //TODO: ******not worked********
+    @Test
+    public void updateBusiness(){
+        BusinessDTO request = new BusinessDTO(1L, "Youtube", "Social Media");
+
+        ResponseEntity<BusinessDTO> response = testRestTemplate.exchange(createURI("/api/business"),
+                HttpMethod.PUT, new HttpEntity<>(request), BusinessDTO.class);
+
+        assertEquals(request, response.getBody());
+    }
+
+    //completed - works
+    @Test
+    public void deleteBusiness(){
+
+        ResponseEntity<BusinessDTO> response = testRestTemplate.exchange(createURI("/api/business/1"),
+                HttpMethod.DELETE, null, BusinessDTO.class);
+
+        BusinessDTO businessDTO = new BusinessDTO(1L, "Facebook", "Social Media");
+
+        assertEquals(200,response.getStatusCodeValue());
+        assertEquals(String.valueOf(1L), String.valueOf(response.getBody().getId()));
+        assertEquals("Facebook", response.getBody().getName());
+        assertEquals("Social Media", response.getBody().getInfo());
+    }
+
+    //***********************************
+    private String createURI(String uri) {
+        return "http://localhost:" + localPort + uri;
+    }
 }

@@ -1,7 +1,5 @@
 package com.example.spring.controller;
 
-
-import com.example.spring.domain.Business;
 import com.example.spring.exceptions.BadRequestException;
 import com.example.spring.service.BusinessService;
 import com.example.spring.service.dto.BusinessDTO;
@@ -16,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/business")
 public class BusinessController {
 
     private BusinessService businessService;
@@ -27,54 +25,57 @@ public class BusinessController {
         this.businessService = businessService;
     }
 
-    @PostMapping("/business/save")
+    @PostMapping
     public ResponseEntity<BusinessDTO> saveBusiness(@RequestBody BusinessDTO businessDTO) {
         logger.debug("Rest request to save business");
         if (businessDTO.getId() != null){
             throw new BadRequestException("Business already exists");
         }
-        businessService.save(businessDTO);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        businessDTO = businessService.save(businessDTO);
+        return new ResponseEntity<>(businessDTO,HttpStatus.CREATED);
     }
 
-    @GetMapping("/business/{id}")
+    //get according to id
+    @GetMapping(value = "/{id}")
     public ResponseEntity<Optional<BusinessDTO>> getBusinessById(@PathVariable Long id) {
         if (id == null){
             throw new BadRequestException("Enter valid id");
         }
-
         Optional<BusinessDTO> result = businessService.getById(id);
-
-        return ResponseEntity.ok().body(result);
-
-    }
-    @GetMapping("/business")
-    public ResponseEntity<List<BusinessDTO>> findAll(){
-        List<BusinessDTO> result = businessService.getAll();
         return ResponseEntity.ok().body(result);
     }
 
-    @PutMapping("/business")
-    public ResponseEntity<BusinessDTO> update(@RequestBody BusinessDTO businessDTO){
-        if (businessDTO.getId() == null){
-            throw new BadRequestException("Id can't be null");
+    //get all
+    @GetMapping
+    public ResponseEntity<List<BusinessDTO>> getAllBusinnesses(){
+        return new ResponseEntity<List<BusinessDTO>>(businessService.getAll(), HttpStatus.OK);
+    }
+
+    //updating business without id path -> it requires {"id" : value, "name":value, "info": value}
+    @PutMapping
+    public ResponseEntity<BusinessDTO> updateBusiness(@RequestBody BusinessDTO businessDTO){
+        Long id = businessDTO.getId();
+        if(id == null) {
+            throw new BadRequestException("Id not defined");
         }
-
-        businessService.save(businessDTO);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+//        Optional<BusinessDTO> result = businessService.getById(id);
+//        if(!result.isPresent()) {
+//            throw new BadRequestException("Business not found with given id: " + id);
+//        }
+        businessService.getById(id).orElseThrow(()->new BadRequestException("Business not found with given id: " + id));
+        businessDTO = businessService.save(businessDTO);
+        return new ResponseEntity<>(businessDTO, HttpStatus.OK);
     }
 
-    @DeleteMapping("/business/{id}")
+    //delete business according to id
+    @DeleteMapping(value = "/{id}")
     public ResponseEntity<BusinessDTO> deleteById(@PathVariable Long id){
-        if (id == null){
-            throw new BadRequestException("Id can not be null");
-        }
-        businessService.delete(id);
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add("Application Name - ", "JavaSpring");
-        httpHeaders.add("Application Params - " , id.toString());
+        Optional<BusinessDTO> businessDTO = businessService.getById(id);
+        if(!businessDTO.isPresent())
+            throw new BadRequestException("Business not found with id: " + id) ;
 
-        return ResponseEntity.ok().headers(httpHeaders).build();
+        businessService.deleteById(id);
+        return new ResponseEntity<>(businessDTO.get(), HttpStatus.OK);
     }
 
 }
