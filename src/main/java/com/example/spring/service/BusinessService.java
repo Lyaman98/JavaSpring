@@ -1,12 +1,9 @@
 package com.example.spring.service;
 
-
-import com.example.spring.service.dto.AdvertisementDTO;
 import com.example.spring.service.dto.BusinessDTO;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 public interface BusinessService {
 
