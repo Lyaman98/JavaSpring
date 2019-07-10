@@ -19,8 +19,9 @@ public class Business {
     @OneToMany
     private Set<Advertisement> advertisements;
 
-    public Business(String name, String info) {
+    public Business(Long id, String name, String info) {
 
+        this.id = id;
         this.name = name;
         this.info = info;
     }

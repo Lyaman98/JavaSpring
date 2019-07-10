@@ -13,8 +13,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.List;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertNull;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = Application.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -54,4 +57,29 @@ public class BusinessControllerIntegrationTest {
     private String createURI(String uri) {
         return "http://localhost:" + localPort + uri;
     }
+
+    @Test
+    public void getAll() throws Exception{
+
+        String result = "[{\"id\":1,\"name\":\"Facebook\",\"info\":\"Social Media\"}," +
+                "{\"id\":2,\"name\":\"Twitter\",\"info\":\"Social networking system\"}," +
+                "{\"id\":3,\"name\":\"Google\",\"info\":\"Search engine\"}]";
+
+        ResponseEntity<String> responseEntity = testRestTemplate.getForEntity(createURI("/api/business"),String.class);
+
+        JSONAssert.assertEquals(result,responseEntity.getBody(),false);
+
+    }
+//
+//    @Test
+//    public void delete() throws Exception{
+//
+//       testRestTemplate.delete(createURI("/api/business/1"));
+//        ResponseEntity<String> result = testRestTemplate.getForEntity(createURI("/api/business/1"), String.class);
+//
+//        assertNull(result);
+//
+//
+//    }
+
 }

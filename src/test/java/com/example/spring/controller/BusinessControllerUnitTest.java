@@ -1,5 +1,7 @@
 package com.example.spring.controller;
 
+import com.example.spring.domain.Business;
+import com.example.spring.repository.BusinessRepository;
 import com.example.spring.service.BusinessService;
 import com.example.spring.service.dto.BusinessDTO;
 import org.junit.Test;
@@ -14,9 +16,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -30,6 +35,7 @@ public class BusinessControllerUnitTest {
 
     @Autowired
     MockMvc mockMvc;
+
 
     @Test
     public void saveBusiness() throws Exception {
@@ -71,4 +77,25 @@ public class BusinessControllerUnitTest {
         JSONAssert.assertEquals(result, mockMvcResult.getResponse().getContentAsString(), false);
 
     }
+
+    @Test
+    public void getAll() throws Exception{
+        List<BusinessDTO> businessDTOList = Arrays.asList(new BusinessDTO(1L,"Facebook","Social Media"),
+                new BusinessDTO(2L,"Google","Search engine"),
+                new BusinessDTO(3L,"Twitter","Social networking system"));
+        when(businessService.getAll()).thenReturn(businessDTOList);
+
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/api/business")
+                .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String result = "[{\"id\":1,\"name\":\"Facebook\",\"info\":\"Social Media\"}," +
+                "{\"id\":2,\"name\":\"Google\",\"info\":\"Search engine\"}," +
+                "{\"id\":3,\"name\":\"Twitter\",\"info\":\"Social networking system\"}]";
+
+        JSONAssert.assertEquals(result,mvcResult.getResponse().getContentAsString(),false);
+    }
+
 }
