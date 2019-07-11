@@ -17,11 +17,10 @@ public class Advertisement {
     @Column
     private String description;
 
-
     @ManyToOne
     @NotNull
+    @JoinColumn(name = "business_id")
     private Business business;
-
 
     public Long getId() {
         return id;

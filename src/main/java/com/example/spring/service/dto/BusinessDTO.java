@@ -1,12 +1,19 @@
 package com.example.spring.service.dto;
 
+import com.example.spring.domain.Advertisement;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.io.Serializable;
+import java.util.Set;
 
 public class BusinessDTO implements Serializable {
 
     private Long id;
     private String name;
     private String info;
+
+    @JsonIgnore
+    private Set<Advertisement> advertisements;
 
     public BusinessDTO(String name, String info) {
         this.name = name;
@@ -44,6 +51,14 @@ public class BusinessDTO implements Serializable {
 
     public void setInfo(String info) {
         this.info = info;
+    }
+
+    public Set<Advertisement> getAdvertisements() {
+        return advertisements;
+    }
+
+    public void setAdvertisements(Set<Advertisement> advertisements) {
+        this.advertisements = advertisements;
     }
 
     @Override

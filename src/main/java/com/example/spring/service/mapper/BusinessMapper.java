@@ -16,6 +16,6 @@ public interface BusinessMapper  {
 
     BusinessDTO toDTO(Business business);
 
-    @Mapping(target = "advertisements", ignore = true)
+    @Mapping(target = "advertisements", ignore = false)
     Business toEntity(BusinessDTO businessDTO);
 }

@@ -1,6 +1,8 @@
 package com.example.spring.domain;
 
 import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -16,11 +18,10 @@ public class Business {
     @Column
     private String info;
 
-    @OneToMany
+    @OneToMany(mappedBy = "business", cascade = CascadeType.ALL)
     private Set<Advertisement> advertisements;
 
     public Business(String name, String info) {
-
         this.name = name;
         this.info = info;
     }
@@ -53,15 +54,36 @@ public class Business {
     }
 
     public void addAdvertisement(Advertisement advertisement){
-        this.advertisements.add(advertisement);
+        if(advertisements == null) advertisements = new HashSet<>();
 
+        advertisements.add(advertisement);
+        advertisement.setBusiness(this);
     }
+
     public void removeAdvertisement(Advertisement advertisement){
-        this.advertisements.remove(advertisement);
+       this.advertisements.remove(advertisement);
     }
 
     public Set<Advertisement> getAdvertisements() {
         return advertisements;
+    }
+
+    public void setAdvertisements(Set<Advertisement> advertisements){this.advertisements = advertisements;}
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Business business = (Business) o;
+        return id.equals(business.id) &&
+                Objects.equals(name, business.name) &&
+                Objects.equals(info, business.info) &&
+                Objects.equals(advertisements, business.advertisements);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 
     @Override
